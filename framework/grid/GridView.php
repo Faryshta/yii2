@@ -390,17 +390,17 @@ class GridView extends BaseListView
      */
     public function renderFilters()
     {
-        if ($this->filterModel !== null) {
-            $cells = [];
-            foreach ($this->columns as $column) {
-                /* @var $column Column */
-                $cells[] = $column->renderFilterCell();
-            }
-
-            return Html::tag('tr', implode('', $cells), $this->filterRowOptions);
-        } else {
+        if ($this->filterModel === null) {
             return '';
         }
+
+        $cells = [];
+        foreach ($this->columns as $column) {
+            /* @var $column Column */
+            $cells[] = $column->renderFilterCell();
+        }
+
+        return Html::tag('tr', implode('', $cells), $this->filterRowOptions);
     }
 
     /**
