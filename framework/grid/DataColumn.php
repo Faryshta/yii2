@@ -98,7 +98,7 @@ class DataColumn extends Column
      *   the list options.
      * - If you don't want a filter for this data column, set this value to be false.
      */
-    public $filter;
+    public $filter = true;
     /**
      * @var array the HTML attributes for the filter input fields. This property is used in combination with
      * the [[filter]] property. When [[filter]] is not set or is an array, this property will be used to
@@ -156,22 +156,45 @@ class DataColumn extends Column
 
         $model = $this->grid->filterModel;
 
-        if ($this->filter !== false && $model instanceof Model && $this->attribute !== null && $model->isAttributeActive($this->attribute)) {
-            if ($model->hasErrors($this->attribute)) {
-                Html::addCssClass($this->filterOptions, 'has-error');
-                $error = ' ' . Html::error($model, $this->attribute, $this->grid->filterErrorOptions);
-            } else {
-                $error = '';
-            }
-            if (is_array($this->filter)) {
-                $options = array_merge(['prompt' => ''], $this->filterInputOptions);
-                return Html::activeDropDownList($model, $this->attribute, $this->filter, $options) . $error;
-            } else {
-                return Html::activeTextInput($model, $this->attribute, $this->filterInputOptions) . $error;
-            }
-        } else {
+        if (empty($this->filter)
+            || !$model instanceof Model
+            || empty($this->attribute)
+            || !$model->isAttributeActive($this->attribute)
+        ) {
             return parent::renderFilterCellContent();
         }
+
+        $error = '';
+        if ($model->hasErrors($this->attribute)) {
+            Html::addCssClass($this->filterOptions, 'has-error');
+            $error = ' ' . Html::error(
+                $model,
+                $this->attribute,
+                $this->grid->filterErrorOptions
+            );
+        }
+
+        if (is_array($this->filter)) {
+            if (!isset ($this->filter['class'])) {
+                // if there is no class key, configure the array
+                // to be items from a DropDownFilter
+                $newFilter = [
+                    'class' => DropDownFilter::className(),
+                    'items' => $this->filter,
+                ];
+                $this->filter = $newFilter;
+            }
+        } else {
+            $this->filter = ['class' => TextInputFilter::className()];
+        }
+
+        return Yii::createObject(array_merge([
+           'model' => $model,
+           'attribute' => $attribute,
+           'column' => $this,
+           'options' => $this->filterInputOptions,
+           'error' => $this->error,
+        ], $this->filter))->run();
     }
 
     /**
