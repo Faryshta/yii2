@@ -62,7 +62,7 @@ class ObjectTest extends TestCase
     public function testGetProperty()
     {
         $this->assertEquals('default', $this->object->Text);
-        $this->assertEquals(NewObject::class, $this->object::class);
+        $this->assertEquals(NewObject::class, $this->object->class);
         $this->setExpectedException('yii\base\UnknownPropertyException');
         $value2 = $this->object->Caption;
     }
